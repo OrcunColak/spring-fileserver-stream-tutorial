@@ -17,7 +17,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("api/v1/streamingresponsebodyjson")
-public class StreamingResponseBodyJsonController {
+public class EmployeeJsonController {
 
     private final List<Employee> employees = new ArrayList<>();
 
@@ -37,6 +37,7 @@ public class StreamingResponseBodyJsonController {
     }
 
     // http://localhost:8080/api/v1/streamingresponsebodyjson/download
+    // Download as JSON not file
     @GetMapping(value = "/download")
     public ResponseEntity<StreamingResponseBody> streamEmployees() {
         StreamingResponseBody responseBody = getStreamingResponseBody();

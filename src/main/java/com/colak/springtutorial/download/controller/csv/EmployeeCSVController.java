@@ -23,7 +23,7 @@ import java.util.List;
 @RestController
 @RequestMapping("api/v1/streamingresponsebodycsv")
 
-public class StreamingResponseBodyCSVController {
+public class EmployeeCSVController {
     private List<Book> books;
 
     public record Book(String title, String author, int year, double price) {
@@ -38,13 +38,14 @@ public class StreamingResponseBodyCSVController {
     }
 
     // http://localhost:8080/api/v1/streamingresponsebodycsv/download
+    // Download as file
     @GetMapping("/download")
     public ResponseEntity<StreamingResponseBody> download() {
         StreamingResponseBody streamingResponseBody = getStreamingResponseBody();
 
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType("text/csv; charset=UTF-8"))
-                .header(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=%s", "book_details.csv"))
+                .header(HttpHeaders.CONTENT_DISPOSITION,"attachment; filename=employee.csv")
                 .header(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, HttpHeaders.CONTENT_DISPOSITION)
                 .body(streamingResponseBody);
     }
