@@ -4,7 +4,7 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 
 public record StreamContentDto(boolean partial,
                                String mediaType,
-                               long contentLength,
+                               String contentLength,
                                String contentRange,
                                StreamingResponseBody streamingResponseBody) {
 

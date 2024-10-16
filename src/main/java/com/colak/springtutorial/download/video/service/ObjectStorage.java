@@ -1,10 +1,8 @@
 package com.colak.springtutorial.download.video.service;
 
-import com.colak.springtutorial.download.video.AttachmentType;
 import com.colak.springtutorial.download.video.dto.StreamContentDto;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
@@ -16,14 +14,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-@Slf4j
 @Service
-public class ObjectStorage  {
+@Slf4j
+public class ObjectStorage {
 
-    public StreamContentDto getStreamContent(AttachmentType attachmentType, @Nullable String range) {
-        log.info("Streaming range content for attachment type: {}, range: {}", attachmentType, range);
+    public StreamContentDto getStreamContent(String fileName, String range) {
+        log.info("Streaming range content for file name: {}, range: {}", fileName, range);
         try {
-            Path filePath = getObjectPath();
+            Path filePath = getObjectPath(fileName);
             long fileSize = Files.size(filePath);
             Pair<Long, Long> ranges = getRange(range, fileSize);
 
@@ -43,26 +41,27 @@ public class ObjectStorage  {
 
     private static StreamingResponseBody getStreamingResponseBody(Path filePath, Pair<Long, Long> ranges) {
         byte[] buffer = new byte[1024];
-        return os -> {
+        return outputStream -> {
             try (RandomAccessFile file = new RandomAccessFile(filePath.toFile(), "r")) {
                 long pos = ranges.getLeft();
                 file.seek(pos);
 
                 while (pos < ranges.getRight()) {
                     file.read(buffer);
-                    os.write(buffer);
+                    outputStream.write(buffer);
                     pos += buffer.length;
                 }
 
-                os.flush();
+                outputStream.flush();
             } catch (Exception exception) {
                 log.error("Error occurred while streaming content {}", exception.getMessage());
             }
         };
     }
 
-    private static long getContentLength(Pair<Long, Long> ranges) {
-        return (ranges.getRight() - ranges.getLeft()) + 1;
+    private static String getContentLength(Pair<Long, Long> ranges) {
+        long result = (ranges.getRight() - ranges.getLeft()) + 1;
+        return Long.toString(result);
     }
 
     private static String getContentRange(Pair<Long, Long> ranges, long fileSize) {
@@ -76,12 +75,8 @@ public class ObjectStorage  {
                 .toString();
     }
 
-    private Path getObjectPath() throws FileNotFoundException {
-        return getObjectPath("video.mov");
-    }
-
-    private Path getObjectPath(String objectName) throws FileNotFoundException {
-        URL mediaResource = ObjectStorage.class.getClassLoader().getResource(objectName);
+    private Path getObjectPath(String fileName) throws FileNotFoundException {
+        URL mediaResource = ObjectStorage.class.getClassLoader().getResource(fileName);
 
         if (mediaResource != null) {
             try {
@@ -94,7 +89,7 @@ public class ObjectStorage  {
         throw new FileNotFoundException();
     }
 
-    private Pair<Long, Long> getRange(@Nullable String range, long fileSize) {
+    private Pair<Long, Long> getRange(String range, long fileSize) {
         if (range == null) {
             return Pair.of(0L, fileSize - 1);
         }

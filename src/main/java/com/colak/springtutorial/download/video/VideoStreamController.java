@@ -17,14 +17,14 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 @RestController
 @RequestMapping("/stream")
 @RequiredArgsConstructor
-public class StreamController {
+public class VideoStreamController {
 
     private final ObjectStorage objectStorage;
 
-    @GetMapping("/{attachmentType}")
-    public ResponseEntity<StreamingResponseBody> stream(@PathVariable AttachmentType attachmentType,
-                                                                  @RequestHeader(value = "Range", required = false) String range) {
-        StreamContentDto streamContentDto = objectStorage.getStreamContent(attachmentType, range);
+    @GetMapping("/{fileName}")
+    public ResponseEntity<StreamingResponseBody> stream(@PathVariable String fileName,
+                                                        @RequestHeader(value = "Range", required = false) String range) {
+        StreamContentDto streamContentDto = objectStorage.getStreamContent(fileName, range);
         return asStreamResponse(streamContentDto);
     }
 
@@ -40,7 +40,7 @@ public class StreamController {
         return ResponseEntity
                 .status(HttpStatus.PARTIAL_CONTENT)
                 .header(HttpHeaders.CONTENT_TYPE, streamingContent.mediaType())
-                .header(HttpHeaders.CONTENT_LENGTH, Long.toString(streamingContent.contentLength()))
+                .header(HttpHeaders.CONTENT_LENGTH, streamingContent.contentLength())
                 .header(HttpHeaders.ACCEPT_RANGES, "bytes")
                 .header(HttpHeaders.CONTENT_RANGE, streamingContent.contentRange())
                 .body(streamingContent.streamingResponseBody());
@@ -50,7 +50,7 @@ public class StreamController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .header(HttpHeaders.CONTENT_TYPE, streamingContent.mediaType())
-                .header(HttpHeaders.CONTENT_LENGTH, Long.toString(streamingContent.contentLength()))
+                .header(HttpHeaders.CONTENT_LENGTH, streamingContent.contentLength())
                 .body(streamingContent.streamingResponseBody());
     }
 
